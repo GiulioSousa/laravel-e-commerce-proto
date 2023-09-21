@@ -40,13 +40,24 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                <div class="mb-3">
+                                    <input type="hidden" name="image_id" id="image_id" value="">
+                                    <label for="image">Image</label>
+                                    <div id="image" class="dropzone dz-clickable">
+                                        <div class="dz-message needsclick">
+                                            <br>Drop files here or click to upload.<br><br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                            <div class="col-md-6">
                                 <div class="mb-3"><label for="status">Status</label>
                                     <select name="status" id="status" class="form-control">
                                         <option value="1">Active</option>
                                         <option value="0">Block</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div>                            
                         </div>
                     </div>
                 </div>
@@ -67,7 +78,7 @@
             var element = $(this)
             $("button[type=submit]").prop('disabled', true)
             $.ajax({
-                url: '{{ route("categories.store") }}',
+                url: '{{ route('categories.store') }}',
                 type: 'post',
                 data: element.serializeArray(),
                 dataType: 'json',
@@ -76,7 +87,7 @@
 
                     if (response['status'] == true) {
 
-                        window.location.href="{{ route('categories.index') }}"
+                        window.location.href = "{{ route('categories.index') }}"
 
                         $("#name")
                             .removeClass('is-invalid')
@@ -129,9 +140,11 @@
             element = $(this);
             $("button[type=submit]").prop('disabled', true)
             $.ajax({
-                url: '{{ route("getSlug") }}',
+                url: '{{ route('getSlug') }}',
                 type: 'get',
-                data: {title: element.val()},
+                data: {
+                    title: element.val()
+                },
                 dataType: 'json',
                 success: function(response) {
                     $("button[type=submit]").prop('disabled', false)
@@ -141,5 +154,27 @@
                 }
             });
         });
+
+        Dropzone.autoDiscover = false
+        const dropzone = $("#image").dropzone({
+            init: function() {
+                this.on('addedfile', function(file) {
+                    if (this.files.length > 1) {
+                        this.removeFile(this.files[0])
+                    }
+                })
+            },
+            url: "{{ route('temp-images.create') }}",
+            maxFiles: 1,
+            paramName: 'image',
+            addRemoveLinks: true,
+            acceptedFiles: "image/jpeg,image/png,image/gif",
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(file, response) {
+                $("#image_id").val(response.image_id)
+            }
+        })
     </script>
 @endsection
